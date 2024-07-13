@@ -29,6 +29,7 @@ limitations under the License.
 #include "xla/ffi/call_frame.h"
 #include "xla/ffi/execution_context.h"
 #include "xla/ffi/ffi_api.h"
+#include "xla/ffi/type_id_registry.h"
 #include "xla/primitive_util.h"
 #include "xla/stream_executor/device_memory.h"
 #include "xla/stream_executor/device_memory_allocator.h"
@@ -39,10 +40,6 @@ limitations under the License.
 #include "tsl/platform/test_benchmark.h"
 
 namespace xla::ffi {
-namespace {
-
-using ::testing::HasSubstr;
-using ::tsl::testing::StatusIs;
 
 enum class Int32BasedEnum : int32_t {
   kOne = 1,
@@ -56,13 +53,15 @@ enum class Int64BasedEnum : int64_t {
   kTwo = kI32MaxValue + 2,
 };
 
-}  // namespace
 }  // namespace xla::ffi
 
 XLA_FFI_REGISTER_ENUM_ATTR_DECODING(::xla::ffi::Int32BasedEnum);
 XLA_FFI_REGISTER_ENUM_ATTR_DECODING(::xla::ffi::Int64BasedEnum);
 
 namespace xla::ffi {
+
+using ::testing::HasSubstr;
+using ::tsl::testing::StatusIs;
 
 TEST(FfiTest, DataTypeEnumValue) {
   // Verify that xla::PrimitiveType and xla::ffi::DataType use the same
@@ -565,7 +564,7 @@ TEST(FfiTest, UserData) {
 
   ExecutionContext execution_context;
   TF_ASSERT_OK(execution_context.Insert(
-      ExecutionContext::TypeId(MyData::id.type_id), &data));
+      TypeIdRegistry::TypeId(MyData::id.type_id), &data));
 
   CallFrameBuilder builder(/*num_args=*/0, /*num_rets=*/0);
   auto call_frame = builder.Build();
