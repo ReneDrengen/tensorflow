@@ -144,7 +144,7 @@ class Span {
 };
 
 //===----------------------------------------------------------------------===//
-// Error
+// Error and ErrorOr
 //===----------------------------------------------------------------------===//
 
 enum class ErrorCode : uint8_t {
@@ -188,6 +188,12 @@ class Error {
  private:
   ErrorCode errc_ = ErrorCode::kOk;
   std::string message_;
+};
+
+template <typename T>
+class ErrorOr : public Expected<T, Error> {
+ public:
+  using Expected<T, Error>::Expected;
 };
 
 //===----------------------------------------------------------------------===//
@@ -573,8 +579,8 @@ struct AttrDecoding<Pointer<T>> {
 // Result encoding
 //===----------------------------------------------------------------------===//
 
-template <>
-struct ResultEncoding<Error> {
+template <ExecutionStage stage>
+struct ResultEncoding<stage, Error> {
   static XLA_FFI_Error* Encode(const XLA_FFI_Api* api, Error error) {
     if (error.success()) return nullptr;
 
